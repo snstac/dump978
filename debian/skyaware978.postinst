@@ -27,10 +27,28 @@ case "$1" in
             adduser --system --home /usr/share/$NAME --no-create-home --quiet "$RUNAS"
         fi
 
-	if dpkg --compare-versions "$2" lt "3.7.2~"
-	then
-		lighty-disable-mod skyview978 || true
-	fi
+        if dpkg --compare-versions "$2" lt "3.7.2~"
+        then
+            # handle various combinations of the symlink targets existing or not existing
+            for m in skyview978 skyview978-statcache
+            do
+                if [ -e /etc/lighttpd/conf-enabled/*-${m}.conf ]
+                then
+                    echo "Disabling lighttpd $m module"
+                    lighty-disable-mod $m || true
+                fi
+            done
+
+            for f in /etc/lighttpd/conf-enabled/*-skyview978*.conf
+            do
+                if [ -h $f ] && [ ! -e $f ]
+                then
+                    # dangling symlink that lighty-disable-mod didn't deal with
+                    echo "Removing $f.." >&2
+                    rm $f
+                fi
+            done
+        fi
 
         # set up lighttpd
         echo "Enabling lighttpd integration.." >&2
