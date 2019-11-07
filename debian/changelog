@@ -1,3 +1,9 @@
+dump978-fa (3.8.0~dev) UNRELEASED; urgency=medium
+
+  * in development
+
+ -- Oliver Jowett <oliver@mutability.co.uk>  Thu, 07 Nov 2019 11:38:43 +0800
+
 dump978-fa (3.7.2) stable; urgency=medium
 
   * dump978: Rename CS8 -> CS8_ to avoid conflicts with macros in termios.h
