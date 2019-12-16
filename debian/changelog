@@ -1,8 +1,14 @@
-dump978-fa (3.8.0~dev) UNRELEASED; urgency=medium
+dump978-fa (3.8.0) UNRELEASED; urgency=medium
 
-  * in development
+  * general: Added support for building on Buster.
 
- -- Oliver Jowett <oliver@mutability.co.uk>  Thu, 07 Nov 2019 11:38:43 +0800
+  * SkyAware: Corrected icon selection for some aircraft types
+  * SkyAware: Fixed display of settings checkboxes on high-DPI displays (dump1090 PR #54)
+  * SkyAware: Fixes to info box display (dump1090 PR #51)
+  * SkyAware: Hide scroll bar when not needed (dump1090 PR #22)
+  * SkyAware: Update aircraft registry to 20191216
+
+ -- Oliver Jowett <oliver.jowett@flightaware.com>  Thu, 07 Nov 2019 11:38:43 +0800
 
 dump978-fa (3.7.2) stable; urgency=medium
 
