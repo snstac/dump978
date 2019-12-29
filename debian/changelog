@@ -2,6 +2,8 @@ dump978-fa (3.8.0) UNRELEASED; urgency=medium
 
   * general: Added support for building on Buster.
 
+  * dump978: Fix crash in CF32H sample converter
+
   * SkyAware: Corrected icon selection for some aircraft types
   * SkyAware: Fixed display of settings checkboxes on high-DPI displays (dump1090 PR #54)
   * SkyAware: Fixes to info box display (dump1090 PR #51)
