@@ -278,7 +278,7 @@ void CS16HConverter::ConvertMagSq(Bytes::const_iterator begin, Bytes::const_iter
 }
 
 void CF32HConverter::ConvertPhase(Bytes::const_iterator begin, Bytes::const_iterator end, PhaseBuffer::iterator out) {
-    auto in_iq = reinterpret_cast<const double *>(&*begin);
+    auto in_iq = reinterpret_cast<const float *>(&*begin);
 
     // unroll the loop
     const auto n = std::distance(begin, end) / 8;
@@ -301,7 +301,7 @@ void CF32HConverter::ConvertPhase(Bytes::const_iterator begin, Bytes::const_iter
 }
 
 void CF32HConverter::ConvertMagSq(Bytes::const_iterator begin, Bytes::const_iterator end, std::vector<double>::iterator out) {
-    auto in_iq = reinterpret_cast<const double *>(&*begin);
+    auto in_iq = reinterpret_cast<const float *>(&*begin);
 
     // unroll the loop
     const auto n = std::distance(begin, end) / 8;
