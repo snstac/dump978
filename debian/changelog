@@ -1,4 +1,4 @@
-dump978-fa (3.8.0) UNRELEASED; urgency=medium
+dump978-fa (3.8.0) stable; urgency=medium
 
   * general: Added support for building on Buster.
 
@@ -10,7 +10,7 @@ dump978-fa (3.8.0) UNRELEASED; urgency=medium
   * SkyAware: Hide scroll bar when not needed (dump1090 PR #22)
   * SkyAware: Update aircraft registry to 20191216
 
- -- Oliver Jowett <oliver.jowett@flightaware.com>  Thu, 07 Nov 2019 11:38:43 +0800
+ -- Oliver Jowett <oliver.jowett@flightaware.com>  Mon, 30 Dec 2019 22:12:05 +0800
 
 dump978-fa (3.7.2) stable; urgency=medium
 
