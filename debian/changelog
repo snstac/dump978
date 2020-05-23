@@ -1,4 +1,4 @@
-dump978-fa (3.8.1) UNRELEASED; urgency=medium
+dump978-fa (3.8.1) stable; urgency=medium
 
   * SkyAware: Fixed SkyAware banner aspect ratio
   * SkyAware: Fixed issue with "Group By Data Type" and "All Aircraft Trails" checkboxes
