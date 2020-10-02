@@ -1,3 +1,9 @@
+dump978-fa (4.1~dev) UNRELEASED; urgency=medium
+
+  * In development
+
+ -- Eric Tran <eric.tran@flightaware.com>  Fri, 02 Oct 2020 13:01:00 -6000
+
 dump978-fa (4.0) stable; urgency=medium
 
   * add <stdexcept> to convert.c (github issue #10)
