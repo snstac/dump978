@@ -1,5 +1,6 @@
 #include "uat_protocol.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -32,6 +33,8 @@ void test_rs_decode(unsigned seed, int trials, int symsize, int gfpoly, int fcr,
             working_block = test_block;
 
             std::vector<int> error_val(blocklen, 0);
+            std::vector<int> error_pos;
+            std::vector<int> corrected_pos(nroots, 0);
 
             /* generate errors */
             for (int i = 0; i < n_errors; ++i) {
@@ -47,10 +50,11 @@ void test_rs_decode(unsigned seed, int trials, int symsize, int gfpoly, int fcr,
 
                 error_val[loc] = bits;
                 working_block[loc] ^= bits;
+                error_pos.push_back(loc);
             }
 
             /* try to decode */
-            int n_corrected = ::decode_rs_char(rs, working_block.data(), NULL, 0);
+            int n_corrected = ::decode_rs_char(rs, working_block.data(), corrected_pos.data(), 0);
 
             if (n_errors > nroots / 2) {
                 /* exceeded error correction capacity */
@@ -66,6 +70,24 @@ void test_rs_decode(unsigned seed, int trials, int symsize, int gfpoly, int fcr,
                 if (working_block != test_block) {
                     std::cerr << "RS(" << blocklen << "," << datalen << ") (seed: " << seed << " trial: " << trial << " errors: " << n_errors << ")"
                               << " data wasn't corrected correctly" << std::endl;
+                }
+
+                for (int i = 0; i < n_corrected; ++i) {
+                    auto found = std::find(error_pos.begin(), error_pos.end(), corrected_pos[i]);
+                    if (found == error_pos.end()) {
+                        std::cerr << "RS(" << blocklen << "," << datalen << ") (seed: " << seed << " trial: " << trial << " errors: " << n_errors << ")"
+                                  << " corrected symbol at position " << corrected_pos[i] << " which was not in error" << std::endl;
+                    } else {
+                        error_pos.erase(found);
+                    }
+                }
+
+                if (!error_pos.empty()) {
+                    std::cerr << "RS(" << blocklen << "," << datalen << ") (seed: " << seed << " trial: " << trial << " errors: " << n_errors << ")"
+                              << " missed errors at positions [";
+                    for (int pos : error_pos)
+                        std::cerr << pos;
+                    std::cerr << "]" << std::endl;
                 }
             }
         }
