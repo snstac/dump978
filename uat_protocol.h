@@ -7,6 +7,8 @@
 #ifndef UAT_PROTOCOL_H
 #define UAT_PROTOCOL_H
 
+#include <cstdint>
+
 namespace flightaware::uat {
     enum class MessageType { DOWNLINK_SHORT, DOWNLINK_LONG, UPLINK, INVALID };
 
