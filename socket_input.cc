@@ -178,12 +178,40 @@ static inline int hexvalue(char c) {
     }
 }
 
+boost::optional<RawMessage> RawInput::ParseMetadataLine(const std::string &line) {
+    // Parse metadata line that starts with '!'
+    RawMessage::MetadataMap metadata;
+
+    for (size_t i = 1; i < line.size();) {
+        auto equals = line.find('=', i);
+        auto semicolon = line.find(';', i);
+        if (equals == std::string::npos || semicolon == std::string::npos || semicolon < equals) {
+            // no more valid data
+            break;
+        }
+
+        auto key = line.substr(i, equals - i);
+        auto value = line.substr(equals + 1, semicolon - equals - 1);
+        metadata[key] = value;
+
+        i = semicolon + 1;
+    }
+
+    return RawMessage(std::move(metadata));
+}
+
 boost::optional<RawMessage> RawInput::ParseLine(const std::string &line) {
     if (line.size() < 2) {
         // too short
         return boost::none;
     }
 
+    if (line[0] == '!') {
+        // metadata only
+        return ParseMetadataLine(line);
+    }
+
+    // message with data payload
     if (line[0] != '-' && line[0] != '+') {
         // badly formatted
         return boost::none;

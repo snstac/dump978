@@ -36,6 +36,7 @@ namespace flightaware::uat {
         void ScheduleRead();
         void ParseBuffer();
         boost::optional<RawMessage> ParseLine(const std::string &line);
+        boost::optional<RawMessage> ParseMetadataLine(const std::string &line);
         void HandleError(const boost::system::error_code &ec);
 
         boost::asio::io_service &service_;

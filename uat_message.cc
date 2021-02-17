@@ -28,16 +28,22 @@ std::ostream &flightaware::uat::operator<<(std::ostream &os, const RawMessage &m
     case MessageType::UPLINK:
         os << '+';
         break;
+    case MessageType::METADATA:
+        os << '!';
+        break;
     default:
         throw std::logic_error("unexpected message type");
     }
 
-    os << std::setfill('0');
-    for (auto b : message.Payload()) {
-        os << std::hex << std::setw(2) << (int)b;
+    if (message.Type() != MessageType::METADATA) {
+        os << std::setfill('0');
+        for (auto b : message.Payload()) {
+            os << std::hex << std::setw(2) << (int)b;
+        }
+
+        os << ";";
     }
 
-    os << ";";
     if (message.Errors() > 0) {
         os << "rs=" << std::dec << std::setw(0) << message.Errors() << ';';
     }
@@ -50,6 +56,10 @@ std::ostream &flightaware::uat::operator<<(std::ostream &os, const RawMessage &m
     if (message.RawTimestamp() != 0) {
         os << "rt=" << std::dec << std::setw(0) << message.RawTimestamp() << ';';
     }
+    for (auto &i : message.Metadata()) {
+        os << i.first << '=' << i.second << ';';
+    }
+
     return os;
 }
 

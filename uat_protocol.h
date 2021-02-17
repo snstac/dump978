@@ -10,7 +10,7 @@
 #include <cstdint>
 
 namespace flightaware::uat {
-    enum class MessageType { DOWNLINK_SHORT, DOWNLINK_LONG, UPLINK, INVALID };
+    enum class MessageType { DOWNLINK_SHORT, DOWNLINK_LONG, UPLINK, METADATA, INVALID };
 
     const unsigned SYNC_BITS = 36;
     const std::uint64_t DOWNLINK_SYNC_WORD = 0xEACDDA4E2UL;
