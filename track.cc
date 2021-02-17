@@ -139,15 +139,19 @@ void Tracker::HandleMessages(SharedMessageVector messages) {
         const std::uint64_t FUTURE_FUZZ = 1000;
 
         for (const auto &message : *messages) {
+            // Handle only downlink messages
+            if (message.Type() != MessageType::DOWNLINK_SHORT && message.Type() != MessageType::DOWNLINK_LONG) {
+                continue;
+            }
+
             // validate message time vs system clock so we are only processing
             // contemporaneous messages
             if (message.ReceivedAt() == 0 || message.ReceivedAt() < (now - PAST_FUZZ) || message.ReceivedAt() > (now + FUTURE_FUZZ)) {
                 std::cerr << "DISCARD " << message.ReceivedAt() << std::endl;
                 continue;
             }
-            if (message.Type() == MessageType::DOWNLINK_SHORT || message.Type() == MessageType::DOWNLINK_LONG) {
-                HandleMessage(AdsbMessage(message));
-            }
+
+            HandleMessage(AdsbMessage(message));
         }
     });
 }

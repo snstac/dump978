@@ -22,6 +22,30 @@ void Reporter::Stop() {
     purge_timer_.cancel();
 }
 
+void Reporter::HandleMessages(flightaware::uat::SharedMessageVector messages) {
+    // Process metadata messages, note fecfix and report versions
+    for (const auto &i : *messages) {
+        if (i.Type() != MessageType::METADATA)
+            continue;
+
+        auto &metadata = i.Metadata();
+        if (metadata.count("fecfix"))
+            fecfix_ = true;
+
+        if (metadata.count("program") || metadata.count("version")) {
+            const std::uint64_t now = now_millis();
+            std::cout << "_v" << '\t' << TSVVersion() << '\t' << "clock" << '\t' << (now / 1000);
+            if (metadata.count("program"))
+                std::cout << '\t' << "uat_program" << '\t' << metadata.at("program");
+            if (metadata.count("version"))
+                std::cout << '\t' << "uat_program_version" << '\t' << metadata.at("version");
+            std::cout << std::endl;
+        }
+    }
+
+    tracker_->HandleMessages(messages);
+}
+
 void Reporter::PurgeOld() {
     tracker_->PurgeOld();
 
@@ -288,7 +312,7 @@ void Reporter::ReportOneAircraft(const Tracker::AddressKey &key, const AircraftS
     }
 
     // generate the line
-    std::cout << "_v" << '\t' << TSV_VERSION << '\t' << "clock" << '\t' << (now / 1000) << '\t';
+    std::cout << "_v" << '\t' << TSVVersion() << '\t' << "clock" << '\t' << (now / 1000) << '\t';
 
     bool icao = (aircraft.address_qualifier == AddressQualifier::ADSB_ICAO || aircraft.address_qualifier == AddressQualifier::TISB_ICAO);
     std::cout << (icao ? "hexid" : "otherid") << '\t' << std::hex << std::uppercase << std::setfill('0') << std::setw(6) << aircraft.address << std::dec << std::nouppercase << std::setfill(' ');
