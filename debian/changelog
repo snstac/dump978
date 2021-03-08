@@ -2,6 +2,15 @@ dump978-fa (5.0~dev) UNRELEASED; urgency=medium
 
   * In development
 
+  * dump978: Fix bugs in the FEC library that could incorrectly mark
+    uncorrectable messages as successfully corrected.
+  * dump978: Add a new network message format for metadata-only messages.
+    This format should be silently ignored by legacy clients; it can be
+    disabled entirely by using the `--raw-legacy-port` option
+  * dump978: On new network connections, emit a metadata message containing
+    decoder name and version, and a flag indicating the FEC fixes are present
+  * faup978: Report software name/version/FEC fix flag upstream when known
+
  -- Eric Tran <eric.tran@flightaware.com>  Sat, 06 Feb 2021 19:01:00 -6000
 
 dump978-fa (4.0) stable; urgency=medium
