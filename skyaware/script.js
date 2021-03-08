@@ -16,6 +16,7 @@ var HighlightedPlane = null;
 var FollowSelected = false;
 var infoBoxOriginalPosition = {};
 var customAltitudeColors = true;
+var myAdsbStatsSiteUrl = null;
 
 var SpecialSquawks = {
         '7500' : { cssClass: 'squawk7500', markerColor: 'rgb(255, 85, 85)', text: 'Aircraft Hijacking' },
@@ -26,7 +27,7 @@ var SpecialSquawks = {
 // Get current map settings
 var CenterLat, CenterLon, ZoomLvl, MapType, SiteCirclesCount, SiteCirclesBaseDistance, SiteCirclesInterval;
 
-var Dump1090Version = "unknown version";
+var SkyAwareVersion = "unknown version";
 var RefreshInterval = 1000;
 
 var PlaneRowTemplate = null;
@@ -50,6 +51,13 @@ var NBSP='\u00a0';
 
 var layers;
 var layerGroup;
+
+var ActiveFilterCount = 0;
+
+var altitude_slider = null;
+var speed_slider = null;
+
+var AircraftLabels = false;
 
 // piaware vs flightfeeder
 var isFlightFeeder = false;
@@ -77,6 +85,12 @@ var checkbox_div_map = new Map ([
         ['#fa_photo_link_checkbox', '#flightaware_photo_link'],
 
 ]);
+
+var DefaultMinMaxFilters = {
+        'nautical': {min: 0, maxSpeed: 1000, maxAltitude: 65000},       // kt, ft
+        'metric' : {min: 0, maxSpeed: 1000, maxAltitude: 20000},        // km/h, m
+        'imperial' : {min: 0, maxSpeed: 600, maxAltitude: 65000}        // mph, ft
+};
 
 function processReceiverUpdate(data) {
 	// Loop through all the planes in the data packet
@@ -217,6 +231,8 @@ function initialize() {
 
         flightFeederCheck();
 
+        setStatsLink();
+
         PlaneRowTemplate = document.getElementById("plane_row_template");
 
         refreshClock();
@@ -294,45 +310,21 @@ function initialize() {
         // Initialize other controls
         initializeUnitsSelector();
 
-        // Set up altitude filter button event handlers and validation options
-        $("#altitude_filter_form").submit(onFilterByAltitude);
-        $("#altitude_filter_form").validate({
-            errorPlacement: function(error, element) {
-                return true;
-            },
-            
-            rules: {
-                minAltitude: {
-                    number: true,
-                    min: -99999,
-                    max: 99999
-                },
-                maxAltitude: {
-                    number: true,
-                    min: -99999,
-                    max: 99999
-                }
-            }
-        });
-
         // check if the altitude color values are default to enable the altitude filter
         if (ColorByAlt.air.h.length === 3 && ColorByAlt.air.h[0].alt === 2000 && ColorByAlt.air.h[0].val === 20 && ColorByAlt.air.h[1].alt === 10000 && ColorByAlt.air.h[1].val === 140 && ColorByAlt.air.h[2].alt === 40000 && ColorByAlt.air.h[2].val === 300) {
             customAltitudeColors = false;
         }
 
+        create_filter_sliders();
 
-        $("#altitude_filter_reset_button").click(onResetAltitudeFilter);
+        $("#aircraft_type_filter_form").submit(onFilterByAircraftType);
+        $("#aircraft_type_filter_reset_button").click(onResetAircraftTypeFilter);
+
+        $("#aircraft_ident_filter_form").submit(onFilterByAircraftIdent);
+        $("#aircraft_ident_filter_reset_button").click(onResetAircraftIdentFilter);
 
         $('#settingsCog').on('click', function() {
         	$('#settings_infoblock').toggle();
-        });
-
-        $('#column_select').on('click', function() {
-                $('#column_select_window').toggle();
-        });
-
-        $('#column_select_close_box').on('click', function() {
-                $('#column_select_window').hide();
         });
 
         $('#settings_close').on('click', function() {
@@ -357,6 +349,10 @@ function initialize() {
 		toggleGroupByDataType(true);
 	});
 
+        $('#aircraft_label_checkbox').on('click', function() {
+                toggleAircraftLabels(true);
+        });
+
         $('#altitude_checkbox').on('click', function() {
         	toggleAltitudeChart(true);
         });
@@ -368,6 +364,43 @@ function initialize() {
         $('#select_all_column_checkbox').on('click', function() {
                 toggleAllColumns(true);
         })
+
+        $('#adsb_datasource_checkbox').on('click', function() {
+                toggleADSBAircraft(true);
+                refreshDataSourceFilters();
+        })
+
+        $('#mlat_datasource_checkbox').on('click', function() {
+                toggleMLATAircraft(true);
+                refreshDataSourceFilters();
+        })
+
+        $('#other_datasource_checkbox').on('click', function() {
+                toggleOtherAircraft(true);
+                refreshDataSourceFilters();
+        })
+
+        $('#tisb_datasource_checkbox').on('click', function() {
+                toggleTISBAircraft(true);
+                refreshDataSourceFilters();
+        })
+
+        $('#column_select_button').on('click', function() {
+                this.classList.toggle("config_button_active");
+                $('#column_select_panel').toggle();
+        });
+
+
+        $('#filter_button').on('click', function() {
+                this.classList.toggle("config_button_active");
+                $('#filter_panel').toggle();
+        });
+
+        $('#stats_page_button').on('click', function() {
+                if (myAdsbStatsSiteUrl) {
+                        window.open(myAdsbStatsSiteUrl);
+                }
+        });
 
         // Event handlers for to column checkboxes
         checkbox_div_map.forEach(function (checkbox, div) {
@@ -388,7 +421,13 @@ function initialize() {
         toggleAltitudeChart(false);
         toggleAllPlanes(false);
         toggleGroupByDataType(false);
+        toggleAircraftLabels(false);
         toggleAllColumns(false);
+        toggleADSBAircraft(false);
+        toggleMLATAircraft(false);
+        toggleOtherAircraft(false);
+        toggleTISBAircraft(false);
+        refreshDataSourceFilters();
 
         // Get receiver metadata, reconfigure using it, then continue
         // with initialization
@@ -406,7 +445,7 @@ function initialize() {
                                 DefaultCenterLon = data.lon;
                         }
                         
-                        Dump1090Version = data.version;
+                        SkyAwareVersion = data.version;
                         RefreshInterval = data.refresh;
                         PositionHistorySize = data.history;
                 })
@@ -415,6 +454,105 @@ function initialize() {
                         initialize_map();
                         start_load_history();
                 });
+}
+
+function create_filter_sliders() {
+        var maxAltitude = DefaultMinMaxFilters[DisplayUnits].maxAltitude;
+        var minAltitude = DefaultMinMaxFilters[DisplayUnits].min;
+        var maxSpeed = DefaultMinMaxFilters[DisplayUnits].maxSpeed;
+        var minSpeed = DefaultMinMaxFilters[DisplayUnits].min;
+
+        altitude_slider = document.getElementById('altitude_slider');
+
+        noUiSlider.create(altitude_slider, {
+                start: [minAltitude, maxAltitude],
+                connect: true,
+                range: {
+                    'min': minAltitude,
+                    'max': maxAltitude
+                },
+                step: 25,
+                format: {
+                        to: (v) => parseFloat(v).toFixed(0),
+                        from: (v) => parseFloat(v).toFixed(0)
+                    }
+            });
+
+        // Change text to reflect slider values
+        var minAltitudeInput = document.getElementById('minAltitudeText'),
+            maxAltitudeInput = document.getElementById('maxAltitudeText');
+
+        altitude_slider.noUiSlider.on('update', function (values, handle) {
+                if (handle) {
+                        maxAltitudeInput.innerHTML = values[handle];
+                } else {
+                        minAltitudeInput.innerHTML = values[handle];
+                }
+        });
+
+        // 'Set' event - Whenever a slider is changed to a new value, this event is fired. This function will trigger every time a slider stops changing, including after calls to the .set() method. This event can be considered as the 'end of slide'.
+        altitude_slider.noUiSlider.on('set', function (values, handle) {
+                onFilterByAltitude();
+        });
+
+        speed_slider = document.getElementById('speed_slider');
+
+        noUiSlider.create(speed_slider, {
+                start: [minSpeed, maxSpeed],
+                connect: true,
+                range: {
+                    'min': minSpeed,
+                    'max': maxSpeed
+                },
+                step: 5,
+                format: {
+                        to: (v) => parseFloat(v).toFixed(0),
+                        from: (v) => parseFloat(v).toFixed(0)
+                    }
+            });
+
+        // Change text to reflect slider values
+        var minSpeedInput = document.getElementById('minSpeedText'),
+            maxSpeedInput = document.getElementById('maxSpeedText');
+
+            speed_slider.noUiSlider.on('update', function (values, handle) {
+                if (handle) {
+                        maxSpeedInput.innerHTML = values[handle];
+                } else {
+                        minSpeedInput.innerHTML = values[handle];
+                }
+        });
+
+        // 'Set' event - Whenever a slider is changed to a new value, this event is fired. This function will trigger every time a slider stops changing, including after calls to the .set() method. This event can be considered as the 'end of slide'.
+        speed_slider.noUiSlider.on('set', function (values, handle) {
+                onFilterBySpeed();
+        });
+}
+
+function reset_filter_sliders() {
+        var maxAltitude = DefaultMinMaxFilters[DisplayUnits].maxAltitude;
+        var minAltitude = DefaultMinMaxFilters[DisplayUnits].min;
+        var maxSpeed = DefaultMinMaxFilters[DisplayUnits].maxSpeed;
+        var minSpeed = DefaultMinMaxFilters[DisplayUnits].min;
+
+        altitude_slider.noUiSlider.updateOptions({
+                start: [minAltitude, maxAltitude],
+                range: {
+                        'min': minAltitude,
+                        'max': maxAltitude
+                }
+        });
+
+        speed_slider.noUiSlider.updateOptions({
+                start: [minSpeed, maxSpeed],
+                range: {
+                        'min': minSpeed,
+                        'max': maxSpeed
+                }
+        });
+
+        // Update filters
+        updatePlaneFilter();
 }
 
 var CurrentHistoryFetch = null;
@@ -1073,10 +1211,11 @@ function refreshSelected() {
         }
         
         $('#dump1090_infoblock').css('display','block');
-        $('#dump1090_version').text(Dump1090Version);
+        $('#skyaware_version').text('SkyAware ' + SkyAwareVersion);
         $('#dump1090_total_ac').text(TrackedAircraft);
         $('#dump1090_total_ac_positions').text(TrackedAircraftPositions);
         $('#dump1090_total_history').text(TrackedHistorySize);
+        $('#active_filter_count').text(ActiveFilterCount);
 
         if (MessageRate !== null) {
                 $('#dump1090_message_rate').text(MessageRate.toFixed(1));
@@ -1674,6 +1813,29 @@ function toggleGroupByDataType(switchToggle) {
 	localStorage.setItem('groupByDataType', groupByDataType);
 }
 
+function toggleAircraftLabels(switchToggle) {
+	if (typeof localStorage['showAircraftLabels'] === 'undefined') {
+		localStorage.setItem('showAircraftLabels', 'deselected');
+	}
+
+	var showAircraftLabels = localStorage.getItem('showAircraftLabels');
+	if (switchToggle === true) {
+		showAircraftLabels = (showAircraftLabels === 'deselected') ? 'selected' : 'deselected';
+	}
+
+	if (showAircraftLabels === 'deselected') {
+		// hide aircraft labels
+		AircraftLabels = false;
+		$('#aircraft_label_checkbox').removeClass('settingsCheckboxChecked');
+	} else {
+		// show aicraft labels
+		AircraftLabels = true;
+		$('#aircraft_label_checkbox').addClass('settingsCheckboxChecked');
+	}
+
+        localStorage.setItem('showAircraftLabels', showAircraftLabels);
+}
+
 function toggleAllPlanes(switchToggle) {
 	if (typeof localStorage['allPlanesSelection'] === 'undefined') {
 		localStorage.setItem('allPlanesSelection','deselected');
@@ -1940,6 +2102,9 @@ function onDisplayUnitsChanged(e) {
     refreshSelected();
     refreshHighlighted();
 
+    // Reset filter sliders on Display Units change
+    reset_filter_sliders();
+
     // Redraw range rings
     if (SitePosition !== null && SitePosition !== undefined && SiteCircles) {
         createSiteCircleFeatures();
@@ -1961,8 +2126,7 @@ function setAltitudeLegend(units) {
     }
 }
 
-function onFilterByAltitude(e) {
-    e.preventDefault();
+function onFilterByAltitude() {
     updatePlaneFilter();
     refreshTableInfo();
 
@@ -1975,6 +2139,36 @@ function onFilterByAltitude(e) {
         refreshSelected();
         refreshHighlighted();
     }
+}
+
+function onFilterBySpeed() {
+        updatePlaneFilter();
+        refreshTableInfo();
+}
+
+function onFilterByAircraftType(e) {
+        e.preventDefault();
+        updatePlaneFilter();
+        refreshTableInfo();
+}
+
+function onResetAircraftTypeFilter(e) {
+        $("#aircraft_type_filter").val("");
+        updatePlaneFilter();
+        refreshTableInfo();
+}
+
+
+function onFilterByAircraftIdent(e) {
+        e.preventDefault();
+        updatePlaneFilter();
+        refreshTableInfo();
+}
+
+function onResetAircraftIdentFilter(e) {
+        $("#aircraft_ident_filter").val("");
+        updatePlaneFilter();
+        refreshTableInfo();
 }
 
 function filterGroundVehicles(switchFilter) {
@@ -2042,29 +2236,54 @@ function toggleAltitudeChart(switchToggle) {
 	localStorage.setItem('altitudeChart', altitudeChartDisplay);
 }
 
-function onResetAltitudeFilter(e) {
-    $("#altitude_filter_min").val("");
-    $("#altitude_filter_max").val("");
-
-    updatePlaneFilter();
-    refreshTableInfo();
-}
-
 function updatePlaneFilter() {
-    var minAltitude = parseFloat($("#altitude_filter_min").val().trim());
-    var maxAltitude = parseFloat($("#altitude_filter_max").val().trim());
-
-    if (minAltitude === NaN) {
-        minAltitude = -Infinity;
-    }
-
-    if (maxAltitude === NaN) {
-        maxAltitude = Infinity;
-    }
+    // Get min/max altitude values from slider
+    var minAltitude = document.getElementById('minAltitudeText').innerHTML.trim();
+    var maxAltitude = document.getElementById('maxAltitudeText').innerHTML.trim();
 
     PlaneFilter.minAltitude = minAltitude;
     PlaneFilter.maxAltitude = maxAltitude;
     PlaneFilter.altitudeUnits = DisplayUnits;
+
+    // Get min/max speed values from slider
+    var minSpeedFilter = document.getElementById('minSpeedText').innerHTML.trim();
+    var maxSpeedFilter = document.getElementById('maxSpeedText').innerHTML.trim();
+
+    PlaneFilter.minSpeedFilter = minSpeedFilter;
+    PlaneFilter.maxSpeedFilter = maxSpeedFilter;
+    PlaneFilter.speedUnits = DisplayUnits;
+
+    // Get aircraft type code filter from input box
+    var aircraftTypeCode = $("#aircraft_type_filter").val().trim().toUpperCase()
+    if (aircraftTypeCode === "") {
+        aircraftTypeCode = undefined
+    }
+
+    // Get aircraft ident filter from input box
+    var aircraftIdent = $("#aircraft_ident_filter").val().trim().toUpperCase()
+    if (aircraftIdent === "") {
+        aircraftIdent = undefined
+    }
+
+    PlaneFilter.aircraftTypeCode = aircraftTypeCode;
+    PlaneFilter.aircraftIdent = aircraftIdent;
+
+    var altitudeFilterSet = (PlaneFilter.minAltitude == DefaultMinMaxFilters[DisplayUnits].min && PlaneFilter.maxAltitude == DefaultMinMaxFilters[DisplayUnits].maxAltitude) ? 0 : 1;
+    var speedFilterSet = (PlaneFilter.minSpeedFilter == DefaultMinMaxFilters[DisplayUnits].min && PlaneFilter.maxSpeedFilter == DefaultMinMaxFilters[DisplayUnits].maxSpeed) ? 0 : 1;
+    var aircraftTypeFilterSet = (PlaneFilter.aircraftTypeCode == undefined) ? 0 : 1;
+    var aircraftIdentFilterSet = (PlaneFilter.aircraftIdent == undefined) ? 0 : 1;
+
+    ActiveFilterCount = altitudeFilterSet + speedFilterSet + aircraftTypeFilterSet + aircraftIdentFilterSet;
+
+    var filter = document.getElementById('filter_button');
+    filter.style.backgroundColor = (ActiveFilterCount > 0) ? "Lime" : "#FEBC11";
+}
+
+function refreshDataSourceFilters () {
+        PlaneFilter.ADSB = (localStorage.getItem('sourceADSBFilter') === 'selected') ? true : false;
+        PlaneFilter.MLAT = (localStorage.getItem('sourceMLATFilter') === 'selected') ? true : false;
+        PlaneFilter.Other = (localStorage.getItem('sourceOtherFilter') === 'selected') ? true : false;
+        PlaneFilter.TISB = (localStorage.getItem('sourceTISBFilter') === 'selected') ? true : false;
 }
 
 function getFlightAwareIdentLink(ident, linkText) {
@@ -2149,6 +2368,20 @@ function flightFeederCheck() {
             }
         }
     })
+}
+
+function setStatsLink() {
+        $.ajax('/status.json', {
+                success: function(data) {
+                    if (data.unclaimed_feeder_id) {
+                        var claim_link = "https://flightaware.com/adsb/piaware/claim/" + data.unclaimed_feeder_id;
+                        $('#stats_page_button').text("Claim this feeder on FlightAware")
+                        myAdsbStatsSiteUrl = claim_link;
+                    } else if (data.site_url) {
+                        myAdsbStatsSiteUrl = data.site_url;
+                    }
+                }
+        })
 }
 
 // updates the page to replace piaware with flightfeeder references
@@ -2356,4 +2589,72 @@ function toggleAllColumns(switchToggle) {
         }
 
         localStorage.setItem('selectAllColumnsCheckbox', selectAllColumnsCheckbox);
+}
+
+function toggleADSBAircraft(switchFilter) {
+	if (typeof localStorage['sourceADSBFilter'] === 'undefined') {
+		localStorage.setItem('sourceADSBFilter','selected');
+	}
+
+	var sourceADSBFilter = localStorage.getItem('sourceADSBFilter');
+	if (switchFilter === true) {
+		sourceADSBFilter = (sourceADSBFilter === 'deselected') ? 'selected' : 'deselected';
+	}
+	if (sourceADSBFilter === 'deselected') {
+		$('#adsb_datasource_checkbox').removeClass('sourceCheckboxChecked');
+	} else {
+		$('#adsb_datasource_checkbox').addClass('sourceCheckboxChecked');
+	}
+	localStorage.setItem('sourceADSBFilter', sourceADSBFilter);
+}
+
+function toggleMLATAircraft(switchFilter) {
+	if (typeof localStorage['sourceMLATFilter'] === 'undefined') {
+		localStorage.setItem('sourceMLATFilter','selected');
+	}
+
+	var sourceMLATFilter = localStorage.getItem('sourceMLATFilter');
+	if (switchFilter === true) {
+		sourceMLATFilter = (sourceMLATFilter === 'deselected') ? 'selected' : 'deselected';
+	}
+	if (sourceMLATFilter === 'deselected') {
+		$('#mlat_datasource_checkbox').removeClass('sourceCheckboxChecked');
+	} else {
+		$('#mlat_datasource_checkbox').addClass('sourceCheckboxChecked');
+	}
+	localStorage.setItem('sourceMLATFilter', sourceMLATFilter);
+}
+
+function toggleOtherAircraft(switchFilter) {
+	if (typeof localStorage['sourceOtherFilter'] === 'undefined') {
+		localStorage.setItem('sourceOtherFilter','selected');
+	}
+
+	var sourceOtherFilter = localStorage.getItem('sourceOtherFilter');
+	if (switchFilter === true) {
+		sourceOtherFilter = (sourceOtherFilter === 'deselected') ? 'selected' : 'deselected';
+	}
+	if (sourceOtherFilter === 'deselected') {
+		$('#other_datasource_checkbox').removeClass('sourceCheckboxChecked');
+	} else {
+		$('#other_datasource_checkbox').addClass('sourceCheckboxChecked');
+	}
+	localStorage.setItem('sourceOtherFilter', sourceOtherFilter);
+}
+
+function toggleTISBAircraft(switchFilter) {
+	if (typeof localStorage['sourceTISBFilter'] === 'undefined') {
+		localStorage.setItem('sourceTISBFilter','selected');
+	}
+
+	var sourceTISBFilter = localStorage.getItem('sourceTISBFilter');
+	if (switchFilter === true) {
+		sourceTISBFilter = (sourceTISBFilter === 'deselected') ? 'selected' : 'deselected';
+	}
+	if (sourceTISBFilter === 'deselected') {
+		$('#tisb_datasource_checkbox').removeClass('sourceCheckboxChecked');
+	} else {
+		$('#tisb_datasource_checkbox').addClass('sourceCheckboxChecked');
+	}
+	localStorage.setItem('sourceTISBFilter', sourceTISBFilter);
 }
