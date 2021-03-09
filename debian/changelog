@@ -1,10 +1,17 @@
 dump978-fa (5.0) UNRELEASED; urgency=medium
 
-  * Add support for metadata-only raw messages
-  * Emit a metadata message as the first message on a raw connection
-  * Use and report new metadata when available
+  * SkyAware978: Pull in latest changes from latest SkyAware
 
- -- Eric Tran <eric.tran@flightaware.com>  Fri, 05 Mar 2021 07:16:00 -6000
+  * dump978: Fix bugs in the FEC library that could incorrectly mark
+    uncorrectable messages as successfully corrected.
+  * dump978: Add a new network message format for metadata-only messages.
+    This format should be silently ignored by legacy clients; it can be
+    disabled entirely by using the `--raw-legacy-port` option
+  * dump978: On new network connections, emit a metadata message containing
+    decoder name and version, and a flag indicating the FEC fixes are present
+  * faup978: Report software name/version/FEC fix flag upstream when known
+
+ -- Eric Tran <eric.tran@flightaware.com>  Mon, 08 Mar 2021 19:01:00 -6000
 
 dump978-fa (4.0) stable; urgency=medium
 

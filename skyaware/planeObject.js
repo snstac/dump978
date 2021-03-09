@@ -109,12 +109,51 @@ function PlaneObject(icao) {
 }
 
 PlaneObject.prototype.isFiltered = function() {
+    // aircraft type filter
+    if (this.filter.aircraftTypeCode) {
+        if (this.icaotype === null || (typeof this.icaotype === 'string' && !this.icaotype.toUpperCase().trim().match(this.filter.aircraftTypeCode))) {
+                return true;
+        }
+    }
+
+    // aircraft ident filter
+    if (this.filter.aircraftIdent) {
+        if (this.flight === null || (typeof this.flight === 'string' && !this.flight.toUpperCase().trim().match(this.filter.aircraftIdent))) {
+                return true;
+        }
+    }
+
+    var dataSource = this.getDataSource();
+    if (dataSource === 'adsb_icao') {
+        if (!this.filter.ADSB) return true;
+    } else if (dataSource === 'mlat') {
+        if (!this.filter.MLAT) return true;
+    } else if (dataSource === 'tisb_trackfile' || dataSource === 'tisb_icao' || dataSource === 'tisb_other') {
+        if (!this.filter.TISB) return true;
+    } else {
+        if (!this.filter.Other) return true;
+    }
+
     if (this.filter.minAltitude !== undefined && this.filter.maxAltitude !== undefined) {
         if (this.altitude === null || this.altitude === undefined) {
             return true;
         }
         var planeAltitude = this.altitude === "ground" ? 0 : convert_altitude(this.altitude, this.filter.altitudeUnits);
-        return planeAltitude < this.filter.minAltitude || planeAltitude > this.filter.maxAltitude;
+        var isFilteredByAltitude = planeAltitude < this.filter.minAltitude || planeAltitude > this.filter.maxAltitude;
+        if (isFilteredByAltitude) {
+                return true;
+        }
+    }
+    if (this.filter.minSpeedFilter !== undefined && this.filter.maxSpeedFilter !== undefined) {
+        if (this.speed === null || this.speed === undefined) {
+                return true;
+        }
+
+        var convertedSpeed = convert_speed(this.speed, this.filter.speedUnits)
+        var isFilteredBySpeed = convertedSpeed < this.filter.minSpeedFilter || convertedSpeed > this.filter.maxSpeedFilter;
+        if (isFilteredBySpeed) {
+                return true;
+        }
     }
 
     // filter out ground vehicles
@@ -410,8 +449,9 @@ PlaneObject.prototype.updateIcon = function() {
         //var transparentBorderWidth = (32 / baseMarker.scale / scaleFactor).toFixed(1);
 
         var svgKey = col + '!' + outline + '!' + baseMarker.svg + '!' + add_stroke + "!" + scaleFactor;
-        var styleKey = opacity + '!' + rotation;
+        var styleKey = opacity + '!' + rotation + '!' + AircraftLabels;
 
+        // New icon or marker change
         if (this.markerStyle === null || this.markerIcon === null || this.markerSvgKey != svgKey) {
                 //console.log(this.icao + " new icon and style " + this.markerSvgKey + " -> " + svgKey);
 
@@ -428,9 +468,26 @@ PlaneObject.prototype.updateIcon = function() {
                 });
 
                 this.markerIcon = icon;
-                this.markerStyle = new ol.style.Style({
-                        image: this.markerIcon
-                });
+
+                if (AircraftLabels && this.flight != null) {
+                        this.markerStyle = new ol.style.Style({
+                                image: this.markerIcon,
+                                text: new ol.style.Text({
+                                        text: this.flight.trim(),
+                                        fill: new ol.style.Fill({color: 'white'}),
+                                        backgroundFill: new ol.style.Stroke({color: 'rgba(0, 47, 93, 0.8'}),
+                                        textAlign: 'center',
+                                        offsetY: -20,
+                                        font: '10px Helvetica',
+                                        padding: [1,0,0,2]
+                                })
+                        });
+                } else {
+                        this.markerStyle = new ol.style.Style({
+                                image: this.markerIcon
+                        });
+                };
+
                 this.markerStaticIcon = null;
                 this.markerStaticStyle = new ol.style.Style({});
 
@@ -443,12 +500,35 @@ PlaneObject.prototype.updateIcon = function() {
                 }
         }
 
+        // Rotation or aircraft label display change
         if (this.markerStyleKey != styleKey) {
                 //console.log(this.icao + " new rotation");
                 this.markerIcon.setRotation(rotation * Math.PI / 180.0);
                 this.markerIcon.setOpacity(opacity);
                 if (this.staticIcon) {
                         this.staticIcon.setOpacity(opacity);
+                }
+
+                if (AircraftLabels && this.flight != null) {
+                        this.markerStyle = new ol.style.Style({
+                                image: this.markerIcon,
+                                text: new ol.style.Text({
+                                        text: this.flight.trim(),
+                                        fill: new ol.style.Fill({color: 'white'}),
+                                        backgroundFill: new ol.style.Stroke({color: 'rgba(0, 47, 93, 0.8)'}),
+                                        textAlign: 'center',
+                                        offsetY: -20,
+                                        font: '10px Helvetica',
+                                        padding: [1,0,0,2]
+                                })
+                        });
+                } else {
+                        this.markerStyle = new ol.style.Style({
+                                image: this.markerIcon
+                        });
+                };
+                if (this.marker !== null) {
+                        this.marker.setStyle(this.markerStyle);
                 }
                 this.markerStyleKey = styleKey;
         }
