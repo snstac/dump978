@@ -1,4 +1,4 @@
-dump978-fa (5.0) UNRELEASED; urgency=medium
+dump978-fa (5.0) stable; urgency=medium
 
   * SkyAware978: Pull in latest changes from latest SkyAware
 
@@ -11,7 +11,7 @@ dump978-fa (5.0) UNRELEASED; urgency=medium
     decoder name and version, and a flag indicating the FEC fixes are present
   * faup978: Report software name/version/FEC fix flag upstream when known
 
- -- Eric Tran <eric.tran@flightaware.com>  Mon, 08 Mar 2021 19:01:00 -6000
+ -- Eric Tran <eric.tran@flightaware.com>  Thu, 11 Mar 2021 19:01:00 -6000
 
 dump978-fa (4.0) stable; urgency=medium
 
