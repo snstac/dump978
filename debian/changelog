@@ -1,3 +1,9 @@
+dump978-fa (6.0~dev) UNRELEASED; urgency=medium
+
+  * In development
+
+ -- Eric Tran <eric.tran@flightaware.com>  Tue, 18 May 2021 15:44:00 -6000
+
 dump978-fa (5.0) stable; urgency=medium
 
   * SkyAware978: Pull in latest changes from latest SkyAware
