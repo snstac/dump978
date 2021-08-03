@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include <boost/io/ios_state.hpp>
+#include <boost/regex.hpp>
 
 using namespace flightaware::uat;
 
@@ -375,7 +376,12 @@ void AdsbMessage::DecodeMS(const RawMessage &raw) {
                     7)) { // CSID field, 1 = callsign, 0 = flightplan ID (aka squawk)
             callsign.emplace(std::move(raw_callsign));
         } else {
-            flightplan_id.emplace(std::move(raw_callsign));
+            // Enforce octal squawk
+            static const boost::regex squawk_match("^[0-7]+$");
+            boost::smatch match;
+            if (boost::regex_match(raw_callsign, match, squawk_match)) {
+                flightplan_id.emplace(std::move(raw_callsign));
+            }
         }
     }
 
