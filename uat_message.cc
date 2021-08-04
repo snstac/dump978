@@ -10,7 +10,6 @@
 #include <sstream>
 
 #include <boost/io/ios_state.hpp>
-#include <boost/regex.hpp>
 
 using namespace flightaware::uat;
 
@@ -347,6 +346,8 @@ void AdsbMessage::DecodeTS(const RawMessage &raw, unsigned startbyte) {
     // 34,6 .. 34,8 reserved
 }
 
+static inline bool IsOctal(char ch) { return (ch >= '0' && ch <= '7'); }
+
 void AdsbMessage::DecodeMS(const RawMessage &raw) {
     static const char *base40_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ *??";
     auto raw1 = raw.Bits(18, 1, 19, 8);
@@ -376,11 +377,13 @@ void AdsbMessage::DecodeMS(const RawMessage &raw) {
                     7)) { // CSID field, 1 = callsign, 0 = flightplan ID (aka squawk)
             callsign.emplace(std::move(raw_callsign));
         } else {
-            // Enforce octal squawk
-            static const boost::regex squawk_match("^[0-7]+$");
-            boost::smatch match;
-            if (boost::regex_match(raw_callsign, match, squawk_match)) {
-                flightplan_id.emplace(std::move(raw_callsign));
+            // Enforce 4 digit octal squawk
+            if (raw_callsign.size() == 4 &&
+                IsOctal(raw_callsign[0]) &&
+                IsOctal(raw_callsign[1]) &&
+                IsOctal(raw_callsign[2]) &&
+                IsOctal(raw_callsign[3])) {
+                    flightplan_id.emplace(std::move(raw_callsign));
             }
         }
     }
