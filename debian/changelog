@@ -1,8 +1,9 @@
-dump978-fa (6.0~dev) UNRELEASED; urgency=medium
+dump978-fa (6.0) UNRELEASED; urgency=medium
 
-  * In development
+  * Enforce octal value when emitting squawk field
+  * Update aircraft DB to 20210817 and add a VH- reg rule
 
- -- Eric Tran <eric.tran@flightaware.com>  Tue, 18 May 2021 15:44:00 -6000
+ -- Eric Tran <eric.tran@flightaware.com>  Tue, 17 Aug 2021 15:44:00 -0600
 
 dump978-fa (5.0) stable; urgency=medium
 
