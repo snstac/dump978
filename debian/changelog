@@ -1,8 +1,8 @@
-dump978-fa (7.0~dev) UNRELEASED; urgency=medium
+dump978-fa (7.0) UNRELEASED; urgency=medium
 
   * In development
 
- -- Eric Tran <eric.tran@flightaware.com>  Fri, 24 Sep 2021 15:35:25 +0000
+ -- Eric Tran <eric.tran@flightaware.com>  Mon, 01 Nov 2021 14:31:00 -0600
 
 dump978-fa (6.1) stable; urgency=medium
 
