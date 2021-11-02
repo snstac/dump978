@@ -60,6 +60,9 @@ void RawInput::TryNextEndpoint(const boost::system::error_code &last_error) {
 void RawInput::ScheduleRead() {
     auto self(shared_from_this());
 
+    if (!socket_.is_open())
+        return;
+
     if (used_ >= readbuf_.size()) {
         HandleError(boost::asio::error::make_error_code(boost::asio::error::no_buffer_space));
         return;
@@ -119,7 +122,9 @@ void RawInput::ParseBuffer() {
             }
             messages->emplace_back(std::move(*result));
         } else {
-            std::cerr << "warning: failed to parse input line: " << line << std::endl;
+            std::cerr << "error: failed to parse input line: " << line << std::endl;
+            HandleError(boost::system::errc::make_error_code(boost::system::errc::protocol_error));
+            return;
         }
         sol = eol + 1;
     }

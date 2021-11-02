@@ -1,8 +1,11 @@
 dump978-fa (7.0~dev) UNRELEASED; urgency=medium
 
   * In development
+  * Treat parse failures as fatal connection errors (a common failure mode is if
+    dump978/faup978 has been pointed at a 1090 data source; we don't want to
+    continually spam errors in this case)
 
- -- Eric Tran <eric.tran@flightaware.com>  Fri, 24 Sep 2021 15:35:25 +0000
+ -- Oliver Jowett <oliver.jowett@flightaware.com>  Tue, 02 Nov 2021 12:46:24 +0800
 
 dump978-fa (6.1) stable; urgency=medium
 
