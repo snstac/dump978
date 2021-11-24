@@ -4,7 +4,7 @@ node(label: 'raspberrypi') {
         durabilityHint(hint: 'PERFORMANCE_OPTIMIZED')
     ])
 
-    def dists = ["buster", "stretch"]
+    def dists = ["bullseye", "buster", "stretch"]
     def srcdir = "${WORKSPACE}/src"
 
     stage('Checkout') {
