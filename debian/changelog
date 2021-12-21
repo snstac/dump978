@@ -1,4 +1,4 @@
-dump978-fa (7.0) UNRELEASED; urgency=medium
+dump978-fa (7.0) stable; urgency=medium
 
   * Treat parse failures as fatal connection errors (a common failure mode is if
     dump978/faup978 has been pointed at a 1090 data source; we don't want to
