@@ -1,3 +1,9 @@
+dump978-fa (7.1) stable; urgency=medium
+
+  * No change release for 7.1
+
+ -- Eric Tran <eric.tran@flightaware.com>  Tue, 11 Jan 2022 07:42:17 -0600
+
 dump978-fa (7.0) stable; urgency=medium
 
   * Treat parse failures as fatal connection errors (a common failure mode is if
