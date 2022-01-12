@@ -12,11 +12,5 @@ include /usr/share/dpkg/default.mk
 override_dh_auto_build:
 	dh_auto_build -- VERSION=$(DEB_VERSION) dump978-fa skyaware978
 
-override_dh_installinit:
-	dh_installinit --no-stop-on-upgrade --no-restart-after-upgrade
-
-override_dh_systemd_start:
-	dh_systemd_start --no-stop-on-upgrade --no-restart-after-upgrade --name=dump978-fa.service
-
 %:
 	dh $@ --with=systemd
