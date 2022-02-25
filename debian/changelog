@@ -1,3 +1,9 @@
+dump978-fa (7.2~dev) UNRELEASED; urgency=medium
+
+  * No change release
+
+ -- Eric Tran  <eric.tran@flightaware.com>  Fri, 25 Feb 2022 10:05:02 -0600
+
 dump978-fa (7.1) stable; urgency=medium
 
   * Preserve dump978-fa start/restart logic during upgrade
