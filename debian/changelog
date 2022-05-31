@@ -1,3 +1,10 @@
+dump978-fa (8.0~dev) UNRELEASED; urgency=medium
+
+  * in development
+  * fix compilation on newer g++
+
+ -- Oliver Jowett <oliver.jowett@flightaware.com>  Tue, 31 May 2022 19:27:43 +0800
+
 dump978-fa (7.2) stable; urgency=medium
 
   * No change release for Piaware 7.2
