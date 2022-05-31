@@ -10,6 +10,7 @@
 #include <chrono>
 #include <memory>
 #include <numeric>
+#include <array>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
