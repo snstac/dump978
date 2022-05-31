@@ -8,6 +8,7 @@
 #define DUMP978_CONVERT_H
 
 #include <memory>
+#include <array>
 
 #include "common.h"
 

@@ -9,6 +9,7 @@
 #include "stratux_serial.h"
 
 #include <iostream>
+#include <array>
 
 using namespace flightaware::uat;
 

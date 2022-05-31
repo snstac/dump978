@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <array>
 
 #include <boost/io/ios_state.hpp>
 
