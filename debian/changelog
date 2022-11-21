@@ -1,9 +1,8 @@
-dump978-fa (8.0~dev) UNRELEASED; urgency=medium
+dump978-fa (8.0) UNRELEASED; urgency=medium
 
-  * in development
   * fix compilation on newer g++
 
- -- Oliver Jowett <oliver.jowett@flightaware.com>  Tue, 31 May 2022 19:27:43 +0800
+ -- Eric Tran <eric.tran@flightaware.com>  Mon, 21 Nov 2022 09:51:43 -0600
 
 dump978-fa (7.2) stable; urgency=medium
 
