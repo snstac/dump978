@@ -15,6 +15,7 @@ node(label: 'raspberrypi') {
     }
 
     def dist_arch_list = [
+      ["bookworm", "armhf"],
       ["bookworm", "arm64"],
       ["bullseye", "armhf"],
       ["bullseye", "arm64"],
