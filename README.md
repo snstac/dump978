@@ -18,6 +18,9 @@ for use by the SkyAware web map.
 
 ## Building as a package
 
+Caution: The package build is memory-hungry. A 1GB Pi will fail to build the
+package. Please build on a machine with more memory, or add swap.
+
 ```
 $ sudo apt-get install \
   build-essential \
