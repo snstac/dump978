@@ -1,14 +1,15 @@
 Source: dump978-fa
 Section: embedded
 Priority: extra
-Maintainer: Oliver Jowett <oliver@mutability.co.uk>
-Build-Depends: debhelper(>=10), libboost-system-dev, libboost-program-options-dev, libboost-regex-dev, libboost-filesystem-dev, libsoapysdr-dev
+Maintainer: Oliver Jowett <oliver.jowett@flightaware.com>
+Build-Depends: debhelper(>=12), libboost-system-dev, libboost-program-options-dev, libboost-regex-dev, libboost-filesystem-dev, libsoapysdr-dev
 Standards-Version: 3.9.3
 Homepage: http://www.flightaware.com/
 Vcs-Git: https://github.com/flightaware/dump978.git
 
 Package: dump978-fa
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Recommends: skyaware978, soapysdr-module-rtlsdr
 Description: ADS-B UAT Ground Station System
@@ -19,6 +20,7 @@ Package: skyaware978
 Replaces: skyview978 (<< 3.7.2~)
 Breaks: skyview978 (<< 3.7.2~)
 Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, lighttpd
 Description: Local web interface for dump978
  .
