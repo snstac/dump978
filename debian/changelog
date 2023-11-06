@@ -1,9 +1,9 @@
-dump978-fa (9.0~dev) UNRELEASED; urgency=medium
+dump978-fa (9.0) stable; urgency=medium
 
   * packaging: add support for bookworm
   * skyaware978: update aircraft DB to 2023-10-26
 
- -- Oliver Jowett <oliver.jowett@flightaware.com>  Tue, 26 Sep 2023 20:10:33 +0800
+ -- Oliver Jowett <oliver.jowett@flightaware.com>  Mon, 06 Nov 2023 21:36:04 +0800
 
 dump978-fa (8.2) stable; urgency=medium
 
