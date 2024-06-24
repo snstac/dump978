@@ -28,7 +28,10 @@ jobs:
         run: dpkg-buildpackage -b
 
       - name: List debian directory
-        run: ls -al debian
+        run: ls -alR debian
+
+      - name: Find deb
+        run: find . -name *.deb
 
       - name: Upload Artifacts to GitHub
         uses: actions/upload-artifact@master
