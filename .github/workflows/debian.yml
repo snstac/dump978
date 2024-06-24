@@ -33,6 +33,9 @@ jobs:
           name: artifact-deb
           path: ./*.deb
 
+      - name: Create Debian Package
+        run: ls -alR
+  
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@master
