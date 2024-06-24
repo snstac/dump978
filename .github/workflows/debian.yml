@@ -31,11 +31,8 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: artifact-deb
-          path: ./*.deb
+          path: ../*.deb
 
-      - name: Create Debian Package
-        run: ls -alR
-  
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@master
@@ -52,7 +49,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./*.deb
+          file: ../*.deb
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
