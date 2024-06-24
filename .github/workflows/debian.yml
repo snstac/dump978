@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@master
 
       - name: Add universe repository
-        run: add-apt-repository universe
+        run: sudo add-apt-repository universe
 
       - name: Update apt cache
         run: sudo apt update -qq
