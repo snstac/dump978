@@ -22,15 +22,7 @@ jobs:
       #   run: sudo apt update -qq
 
       - name: Install Debian Package Building Dependencies
-        run: sudo apt-get install \
-          build-essential \
-          debhelper \
-          dh-systemd \
-          libboost-system-dev \
-          libboost-program-options-dev \
-          libboost-regex-dev \
-          libboost-filesystem-dev \
-          libsoapysdr-dev
+        run: sudo apt-get install build-essential debhelper dh-systemd libboost-system-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libsoapysdr-dev
 
       - name: Create Debian Package
         run: dpkg-buildpackage -b
