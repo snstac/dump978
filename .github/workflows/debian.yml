@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@master
 
       - name: Install Debian Package Building Dependencies
-        run: sudo sudo apt-get install \
+        run: sudo apt-get install \
             build-essential \
             debhelper \
             dh-systemd \
