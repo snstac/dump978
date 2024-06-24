@@ -28,16 +28,13 @@ jobs:
         run: dpkg-buildpackage -b
 
       - name: List debian directory
-        run: ls -alR debian
-
-      - name: Find deb
-        run: find . -name *.deb
+        run: cp ../*.deb .
 
       - name: Upload Artifacts to GitHub
         uses: actions/upload-artifact@master
         with:
           name: artifact-deb
-          path: debian/*.deb
+          path: ./*.deb
 
       - name: Create GitHub Release
         id: create_release
@@ -55,7 +52,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: debian/*.deb
+          file: ./*.deb
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
